@@ -15,36 +15,47 @@ const speechToText = new SpeechToText({
   disableSslVerification: true
 });
 
-const params = {
-  // From file
-  audio: fs.createReadStream('./resources/meeting.mp3'),
-  contentType: 'audio/mp3',
-  speakerLabels: true,
-  audioMetrics: false,
-  objectMode: false,
-  interimResults: false
-};
+function formatTranscript(results) {
+  let transcription = '';
+  results.forEach(result => {
+    transcription += result.alternatives[0].transcript + ' ';
+  });
+  return transcription;
+}
 
-function transcribeAudio() {
-  return new Promise((resolve, reject) => {
+function saveTranscript(text, filename) {
+  fs.writeFile(
+    __dirname + '/public/transcripts/' + filename + '.txt',
+    text,
+    function(err) {
+      if (err) {
+        return console.log(err);
+      }
+      console.log('The file was saved!');
+    }
+  );
+  return true;
+}
+
+function transcribeAudio(fileName) {
+  return new Promise(async (resolve, reject) => {
+    const params = {
+      audio: fs.createReadStream(__dirname + '/public/uploads/' + fileName),
+      contentType: 'audio/mp3',
+      speakerLabels: true,
+      audioMetrics: false,
+      objectMode: false,
+      interimResults: false
+    };
     console.log('\n Transcribing audio now... \n');
-    speechToText
-      .recognize(params)
-      .then(response => {
-        // console.log(JSON.stringify(response.result, null, 2));
-        let results = response.result.results;
-        let transcription = '';
-        results.forEach(result => {
-          // console.log('result', result);
-          console.log(JSON.stringify(result, null, 2));
-          transcription += result.alternatives[0].transcript + ' ';
-        });
-        resolve(transcription);
-      })
-      .catch(err => {
-        console.log(err);
-        reject(err);
-      });
+    try {
+      let { result } = await speechToText.recognize(params);
+      let formattedTranscript = formatTranscript(result.results);
+      saveTranscript(formattedTranscript, fileName);
+      resolve(formattedTranscript);
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 

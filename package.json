@@ -12,9 +12,12 @@
   "dependencies": {
     "@ibm-watson/natural-language-understanding-nodejs": "^0.4.0",
     "axios": "^0.19.1",
+    "busboy": "^0.3.1",
+    "connect-busboy": "0.0.2",
     "express": "^4.17.1",
     "ibm-watson": "^5.3.0",
     "line-in": "^0.1.2",
+    "morgan": "^1.9.1",
     "unirest": "^0.6.0",
     "watson-developer-cloud": "^4.0.1",
     "wav": "^1.0.2"

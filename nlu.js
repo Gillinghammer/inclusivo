@@ -23,18 +23,15 @@ const analyzeParams = {
 };
 
 function nluAnalysis() {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     console.log('\n Natural Language Understanding Processing... \n');
-    naturalLanguageUnderstanding
-      .analyze(analyzeParams)
-      .then(analysisResults => {
-        console.log(JSON.stringify(analysisResults, null, 2));
-        resolve(analysisResults.result);
-      })
-      .catch(err => {
-        console.log('error:', err);
-        reject(err);
-      });
+    try {
+      let nluResult = await naturalLanguageUnderstanding.analyze(analyzeParams);
+      console.log(JSON.stringify(nluResult, null, 2));
+      resolve(nluResult.result);
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
