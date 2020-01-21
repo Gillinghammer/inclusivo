@@ -9,6 +9,17 @@ var bodyParser = require('body-parser');
 let nlu = nluTools.nluAnalysis;
 let transcribe = speechTools.transcribeAudio;
 var fs = require('fs-extra');
+//Import the mongoose module
+var mongoose = require('mongoose');
+//Set up default mongoose connection
+var mongoDB = 'mongodb://admin:r0adst3r@ds211269.mlab.com:11269/inclusivo';
+var TranscriptionModel = require('./models/Transcription');
+var Transcription = TranscriptionModel.Transcription;
+mongoose.connect(mongoDB, { useNewUrlParser: true });
+//Get the default connection
+var db = mongoose.connection;
+//Bind connection to error event (to get notification of connection errors)
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 const app = express();
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -33,9 +44,24 @@ app.get('/', async (req, res) => {
 });
 
 app.get('/transcribe/:fileName', async (req, res, next) => {
-  let transciption = await transcribe(req.params.fileName);
+  let fileName = req.params.fileName;
+  let transciption = await transcribe(fileName);
   console.log(transciption);
-  res.send('transcribing in process');
+  let t = new Transcription({
+    text: transciption,
+    name: fileName
+      .split('.')
+      .slice(0, -1)
+      .join('.')
+  });
+  t.save();
+  res.send(t);
+});
+
+app.get('/transcribe/list', async (req, res, next) => {
+  console.log('hello ', Transcription);
+  let list = await Transcription.find({});
+  res.send('list');
 });
 
 app.get('/nlu/:fileName', async (req, res, next) => {
